@@ -6,9 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { SlidersHorizontal } from "lucide-react";
 
 import { useProducts } from "@/context/products-context";
-import { categories } from "@/lib/products";
+import { useCategories } from "@/context/categories-context";
 import { formatPrice } from "@/lib/format";
-import type { Category } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 import { ProductGrid } from "@/components/product-grid";
@@ -42,6 +41,7 @@ function ProdutosContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { products } = useProducts();
+  const { categories } = useCategories();
 
   const maxPossiblePrice = React.useMemo(
     () => Math.ceil(Math.max(...products.map((p) => p.price), 1000) / 100) * 100,
@@ -49,8 +49,8 @@ function ProdutosContent() {
   );
 
   const [query, setQuery] = React.useState(searchParams.get("q") ?? "");
-  const [category, setCategory] = React.useState<Category | "all">(
-    (searchParams.get("categoria") as Category | null) ?? "all"
+  const [category, setCategory] = React.useState<string | "all">(
+    searchParams.get("categoria") ?? "all"
   );
   const [maxPrice, setMaxPrice] = React.useState(maxPossiblePrice);
   const [sort, setSort] = React.useState<SortOption>("relevancia");

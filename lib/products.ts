@@ -1,19 +1,26 @@
-import type { Category, Product } from "./types";
+import type { Product } from "./types";
 
-export const categories: Category[] = [
-  "Fones",
-  "Notebooks",
-  "Smartphones",
-  "Acessórios",
-  "Wearables",
-  "Monitores",
-];
+type SeedProduct = Pick<
+  Product,
+  | "id"
+  | "name"
+  | "description"
+  | "category"
+  | "price"
+  | "compareAtPrice"
+  | "stock"
+  | "images"
+  | "featured"
+  | "isNew"
+  | "rating"
+  | "createdAt"
+>;
 
 function img(seed: string) {
   return `https://picsum.photos/seed/${seed}/900/900`;
 }
 
-export const products: Product[] = [
+const seedProducts: SeedProduct[] = [
   {
     id: "fone-aether-pro",
     name: "Aether Pro Wireless",
@@ -275,3 +282,23 @@ export const products: Product[] = [
     createdAt: "2026-03-11",
   },
 ];
+
+export function deriveProductFields(
+  seed: SeedProduct
+): Product {
+  const cost = Math.round(seed.price * 0.55 * 100) / 100;
+  const shortDescription = seed.description.split(". ")[0].trim().replace(/\.?$/, ".");
+  return {
+    ...seed,
+    slug: seed.id,
+    shortDescription,
+    cost,
+    sku: `SKU-${seed.id.toUpperCase()}`,
+    isPromotion: Boolean(seed.compareAtPrice),
+    active: true,
+    metaTitle: `${seed.name} | Marvel`,
+    metaDescription: seed.description.slice(0, 155),
+  };
+}
+
+export const products: Product[] = seedProducts.map(deriveProductFields);

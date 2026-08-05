@@ -4,10 +4,10 @@ import * as React from "react";
 import { toast } from "sonner";
 
 import { useProducts } from "@/context/products-context";
+import { useSettings } from "@/context/settings-context";
 import type { CartItem, Product } from "@/lib/types";
 
 const STORAGE_KEY = "marvel-cart";
-const SHIPPING_COST = 39.9;
 const FREE_SHIPPING_THRESHOLD = 500;
 
 export interface CartLine extends CartItem {
@@ -32,6 +32,7 @@ const CartContext = React.createContext<CartContextValue | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const { getProduct } = useProducts();
+  const { settings } = useSettings();
   const [items, setItems] = React.useState<CartItem[]>([]);
   const [isReady, setIsReady] = React.useState(false);
 
@@ -103,7 +104,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     [lines]
   );
 
-  const shipping = subtotal === 0 || subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
+  const shipping =
+    subtotal === 0 || subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : settings.defaultShippingRate;
   const total = subtotal + shipping;
   const count = items.reduce((sum, item) => sum + item.quantity, 0);
 

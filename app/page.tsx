@@ -2,32 +2,14 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import {
-  ArrowRight,
-  Headphones,
-  Laptop,
-  Smartphone,
-  ShieldCheck,
-  Truck,
-  Watch,
-  Monitor,
-  Cable,
-} from "lucide-react";
+import { ArrowRight, ShieldCheck, Truck } from "lucide-react";
 
 import { useProducts } from "@/context/products-context";
-import { categories } from "@/lib/products";
+import { useCategories } from "@/context/categories-context";
 import { Hero } from "@/components/hero";
 import { ProductGrid } from "@/components/product-grid";
 import { Button } from "@/components/ui/button";
-
-const CATEGORY_ICONS: Record<string, React.ElementType> = {
-  Fones: Headphones,
-  Notebooks: Laptop,
-  Smartphones: Smartphone,
-  Acessórios: Cable,
-  Wearables: Watch,
-  Monitores: Monitor,
-};
+import { DynamicIcon } from "@/components/dynamic-icon";
 
 const PERKS = [
   {
@@ -49,6 +31,7 @@ const PERKS = [
 
 export default function Home() {
   const { products } = useProducts();
+  const { categories } = useCategories();
   const featured = products.filter((p) => p.featured).slice(0, 8);
 
   return (
@@ -107,28 +90,28 @@ export default function Home() {
           Explore por categoria
         </h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-          {categories.map((category, i) => {
-            const Icon = CATEGORY_ICONS[category] ?? Cable;
-            return (
-              <motion.div
-                key={category}
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.3, delay: i * 0.05 }}
+          {categories.map((category, i) => (
+            <motion.div
+              key={category.id}
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.3, delay: i * 0.05 }}
+            >
+              <Link
+                href={`/produtos?categoria=${encodeURIComponent(category.name)}`}
+                className="group flex flex-col items-center gap-3 rounded-2xl border border-border bg-white p-6 text-center transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
               >
-                <Link
-                  href={`/produtos?categoria=${encodeURIComponent(category)}`}
-                  className="group flex flex-col items-center gap-3 rounded-2xl border border-border bg-white p-6 text-center transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
+                <div
+                  className="flex size-12 items-center justify-center rounded-full text-white transition-transform group-hover:scale-105"
+                  style={{ backgroundColor: category.color }}
                 >
-                  <div className="flex size-12 items-center justify-center rounded-full bg-accent text-accent-foreground transition-colors group-hover:bg-primary group-hover:text-white">
-                    <Icon className="size-5" />
-                  </div>
-                  <span className="text-sm font-medium text-foreground">{category}</span>
-                </Link>
-              </motion.div>
-            );
-          })}
+                  <DynamicIcon name={category.icon} className="size-5" />
+                </div>
+                <span className="text-sm font-medium text-foreground">{category.name}</span>
+              </Link>
+            </motion.div>
+          ))}
         </div>
       </section>
 

@@ -1,0 +1,68 @@
+import type { Customer } from "./types";
+
+export const customers: Customer[] = [
+  {
+    id: "cust-1",
+    name: "Mariana Souza",
+    email: "mariana.souza@email.com",
+    phone: "(11) 98221-4432",
+    address: { cep: "01311-000", rua: "Av. Paulista", numero: "1200", cidade: "São Paulo", estado: "SP" },
+    createdAt: "2026-01-08",
+  },
+  {
+    id: "cust-2",
+    name: "Lucas Pereira",
+    email: "lucas.pereira@email.com",
+    phone: "(21) 97733-1290",
+    address: { cep: "22041-011", rua: "Rua Barata Ribeiro", numero: "450", cidade: "Rio de Janeiro", estado: "RJ" },
+    createdAt: "2026-01-22",
+  },
+  {
+    id: "cust-3",
+    name: "Ana Beatriz Lima",
+    email: "ana.lima@email.com",
+    phone: "(31) 99112-8834",
+    address: { cep: "30130-000", rua: "Av. Afonso Pena", numero: "800", cidade: "Belo Horizonte", estado: "MG" },
+    createdAt: "2026-02-14",
+  },
+  {
+    id: "cust-4",
+    name: "Rafael Costa",
+    email: "rafael.costa@email.com",
+    phone: "(41) 98844-2210",
+    address: { cep: "80010-000", rua: "Rua XV de Novembro", numero: "233", cidade: "Curitiba", estado: "PR" },
+    createdAt: "2026-03-01",
+  },
+  {
+    id: "cust-5",
+    name: "Camila Rodrigues",
+    email: "camila.rodrigues@email.com",
+    phone: "(51) 99667-5521",
+    address: { cep: "90010-150", rua: "Av. Borges de Medeiros", numero: "600", cidade: "Porto Alegre", estado: "RS" },
+    createdAt: "2026-03-19",
+  },
+  {
+    id: "cust-6",
+    name: "Bruno Almeida",
+    email: "bruno.almeida@email.com",
+    phone: "(85) 98123-4567",
+    address: { cep: "60160-230", rua: "Av. Beira Mar", numero: "1500", cidade: "Fortaleza", estado: "CE" },
+    createdAt: "2026-04-05",
+  },
+  {
+    id: "cust-7",
+    name: "Juliana Ferreira",
+    email: "juliana.ferreira@email.com",
+    phone: "(62) 99988-3344",
+    address: { cep: "74015-010", rua: "Av. Goiás", numero: "90", cidade: "Goiânia", estado: "GO" },
+    createdAt: "2026-05-02",
+  },
+  {
+    id: "cust-8",
+    name: "Diego Martins",
+    email: "diego.martins@email.com",
+    phone: "(48) 99776-2210",
+    address: { cep: "88010-400", rua: "Av. Beira Mar Norte", numero: "320", cidade: "Florianópolis", estado: "SC" },
+    createdAt: "2026-05-28",
+  },
+];
