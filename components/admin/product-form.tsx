@@ -7,7 +7,7 @@ import { z } from "zod";
 import { Plus } from "lucide-react";
 
 import { useCategories } from "@/context/categories-context";
-import type { ProductInput } from "@/context/products-context";
+import type { ProductInput } from "@/services/products-admin";
 import type { Product } from "@/lib/types";
 import { slugify } from "@/lib/utils";
 import { formatPrice } from "@/lib/format";
@@ -56,7 +56,7 @@ type ProductFormValues = z.infer<typeof productSchema>;
 
 interface ProductFormProps {
   initialData?: Product;
-  onSubmit: (data: ProductInput) => void;
+  onSubmit: (data: ProductInput) => void | Promise<void>;
   onCancel: () => void;
   submitLabel?: string;
 }
@@ -128,7 +128,7 @@ export function ProductForm({
   const margin = price > 0 ? ((price - cost) / price) * 100 : 0;
 
   function handleFormSubmit(values: ProductFormValues) {
-    onSubmit({
+    return onSubmit({
       name: values.name,
       slug: values.slug,
       shortDescription: values.shortDescription,

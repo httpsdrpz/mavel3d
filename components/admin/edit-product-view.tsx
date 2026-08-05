@@ -1,46 +1,40 @@
 "use client";
 
 import * as React from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Package, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 
-import { useProducts, type ProductInput } from "@/context/products-context";
+import { deleteProductAction, updateProductAction } from "@/app/admin/(protected)/produtos/actions";
+import type { ProductInput } from "@/services/products-admin";
+import type { Product } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { ProductForm } from "@/components/admin/product-form";
 import { DeleteDialog } from "@/components/admin/delete-dialog";
-import { EmptyState } from "@/components/admin/empty-state";
 
-export default function EditProductPage() {
-  const params = useParams<{ id: string }>();
+export function EditProductView({ product }: { product: Product }) {
   const router = useRouter();
-  const { getProduct, updateProduct, deleteProduct, isReady } = useProducts();
   const [deleteOpen, setDeleteOpen] = React.useState(false);
 
-  const product = getProduct(params.id);
-
-  function handleSubmit(data: ProductInput) {
-    updateProduct(params.id, data);
-    router.push("/admin/produtos");
+  async function handleSubmit(data: ProductInput) {
+    try {
+      await updateProductAction(product.id, data);
+      toast.success("Produto atualizado com sucesso");
+      router.push("/admin/produtos");
+    } catch {
+      toast.error("Não foi possível atualizar o produto");
+    }
   }
 
-  function handleDelete() {
-    deleteProduct(params.id);
-    router.push("/admin/produtos");
+  async function handleDelete() {
+    try {
+      await deleteProductAction(product.id);
+      toast.success("Produto excluído");
+      router.push("/admin/produtos");
+    } catch {
+      toast.error("Não foi possível excluir o produto");
+    }
   }
-
-  if (isReady && !product) {
-    return (
-      <EmptyState
-        icon={Package}
-        title="Produto não encontrado"
-        description="Esse produto pode ter sido removido."
-        actionLabel="Voltar para produtos"
-        onAction={() => router.push("/admin/produtos")}
-      />
-    );
-  }
-
-  if (!product) return null;
 
   return (
     <div className="flex flex-col gap-8">

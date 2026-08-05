@@ -3,11 +3,12 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, PanelLeftClose, PanelLeftOpen, Store } from "lucide-react";
+import { LogOut, Menu, PanelLeftClose, PanelLeftOpen, Store } from "lucide-react";
 
 import { useSettings } from "@/context/settings-context";
 import { useAdminSidebar } from "@/components/admin/admin-sidebar-context";
 import { ADMIN_NAV_LINKS, isAdminLinkActive } from "@/components/admin/admin-nav-links";
+import { logoutAction } from "@/app/admin/login/actions";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
@@ -47,6 +48,12 @@ export function AdminHeader() {
       <h1 className="text-lg font-semibold tracking-tight text-foreground">
         {currentTitle(pathname)}
       </h1>
+
+      <form action={logoutAction} className="ml-auto">
+        <Button type="submit" variant="ghost" size="icon" aria-label="Sair">
+          <LogOut className="size-4" />
+        </Button>
+      </form>
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left">

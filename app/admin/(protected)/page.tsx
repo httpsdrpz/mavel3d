@@ -1,22 +1,18 @@
-"use client";
-
-import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AlertTriangle, Boxes, ClipboardList, Package, Star, Wallet } from "lucide-react";
 
-import { useProducts } from "@/context/products-context";
+import { getAllProductsAdmin } from "@/services/products-admin";
 import { getOrders } from "@/services/orders.service";
 import { activity } from "@/lib/activity";
 import { formatPrice } from "@/lib/format";
 
 import { Badge } from "@/components/ui/badge";
 import { StatsGrid, type StatCardData } from "@/components/admin/stats-grid";
-import { CardsSkeleton } from "@/components/admin/loading-skeleton";
 
-export default function AdminDashboardPage() {
-  const { products, isReady } = useProducts();
-  const orders = React.useMemo(() => getOrders(), []);
+export default async function AdminDashboardPage() {
+  const products = await getAllProductsAdmin();
+  const orders = getOrders();
 
   const totalProducts = products.length;
   const totalStock = products.reduce((sum, p) => sum + p.stock, 0);
@@ -46,7 +42,7 @@ export default function AdminDashboardPage() {
         <p className="mt-1 text-muted-foreground">Visão geral da sua loja Marvel.</p>
       </div>
 
-      {isReady ? <StatsGrid stats={stats} /> : <CardsSkeleton count={5} />}
+      <StatsGrid stats={stats} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="rounded-2xl border border-border bg-white p-6 lg:col-span-1">

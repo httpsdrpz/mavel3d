@@ -1,8 +1,11 @@
 "use client";
 
+import * as React from "react";
 import Image from "next/image";
-import { Plus, Trash2, ImageOff } from "lucide-react";
+import { toast } from "sonner";
+import { ImageOff, Loader2, Plus, Trash2, Upload } from "lucide-react";
 
+import { uploadProductImageAction } from "@/app/admin/(protected)/produtos/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -29,12 +32,74 @@ function ImagePreview({ url }: { url: string }) {
   );
 }
 
+function UploadButton({
+  uploading,
+  onFileSelected,
+}: {
+  uploading: boolean;
+  onFileSelected: (file: File) => void;
+}) {
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  return (
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) onFileSelected(file);
+          e.target.value = "";
+        }}
+      />
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        disabled={uploading}
+        onClick={() => inputRef.current?.click()}
+        aria-label="Enviar imagem"
+      >
+        {uploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+      </Button>
+    </>
+  );
+}
+
 export function ProductImageUpload({
   mainImage,
   onMainImageChange,
   gallery,
   onGalleryChange,
 }: ProductImageUploadProps) {
+  const [uploadingMain, setUploadingMain] = React.useState(false);
+  const [uploadingGalleryIndex, setUploadingGalleryIndex] = React.useState<number | null>(null);
+
+  async function uploadFile(file: File): Promise<string | null> {
+    try {
+      return await uploadProductImageAction(file);
+    } catch {
+      toast.error("Não foi possível enviar a imagem");
+      return null;
+    }
+  }
+
+  async function handleMainUpload(file: File) {
+    setUploadingMain(true);
+    const url = await uploadFile(file);
+    setUploadingMain(false);
+    if (url) onMainImageChange(url);
+  }
+
+  async function handleGalleryUpload(index: number, file: File) {
+    setUploadingGalleryIndex(index);
+    const url = await uploadFile(file);
+    setUploadingGalleryIndex(null);
+    if (url) updateGalleryUrl(index, url);
+  }
+
   function updateGalleryUrl(index: number, url: string) {
     const next = [...gallery];
     next[index] = url;
@@ -52,16 +117,17 @@ export function ProductImageUpload({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <Label htmlFor="main-image">Imagem principal (URL)</Label>
+        <Label htmlFor="main-image">Imagem principal</Label>
         <div className="flex items-center gap-3">
           <ImagePreview url={mainImage} />
           <Input
             id="main-image"
-            placeholder="https://..."
+            placeholder="https:// ou envie um arquivo"
             value={mainImage}
             onChange={(e) => onMainImageChange(e.target.value)}
             className="flex-1"
           />
+          <UploadButton uploading={uploadingMain} onFileSelected={handleMainUpload} />
         </div>
       </div>
 
@@ -82,10 +148,14 @@ export function ProductImageUpload({
             <div key={index} className="flex items-center gap-3">
               <ImagePreview url={url} />
               <Input
-                placeholder="https://..."
+                placeholder="https:// ou envie um arquivo"
                 value={url}
                 onChange={(e) => updateGalleryUrl(index, e.target.value)}
                 className="flex-1"
+              />
+              <UploadButton
+                uploading={uploadingGalleryIndex === index}
+                onFileSelected={(file) => handleGalleryUpload(index, file)}
               />
               <Button
                 type="button"

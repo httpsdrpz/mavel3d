@@ -31,10 +31,15 @@ interface CartContextValue {
 const CartContext = React.createContext<CartContextValue | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const { getProduct } = useProducts();
+  const { getProduct, isReady: productsReady } = useProducts();
   const { settings } = useSettings();
   const [items, setItems] = React.useState<CartItem[]>([]);
-  const [isReady, setIsReady] = React.useState(false);
+  const [cartHydrated, setCartHydrated] = React.useState(false);
+
+  // Also wait on products so `lines` (which looks products up by id) doesn't
+  // briefly resolve empty and flash an "empty cart" before the product list
+  // finishes loading from Supabase.
+  const isReady = cartHydrated && productsReady;
 
   React.useEffect(() => {
     try {
@@ -44,14 +49,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // ignore corrupted storage
     } finally {
-      setIsReady(true);
+      setCartHydrated(true);
     }
   }, []);
 
   React.useEffect(() => {
-    if (!isReady) return;
+    if (!cartHydrated) return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  }, [items, isReady]);
+  }, [items, cartHydrated]);
 
   const addToCart = React.useCallback(
     (productId: string, quantity = 1) => {

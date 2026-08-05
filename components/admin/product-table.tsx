@@ -16,7 +16,9 @@ import {
   Trash2,
 } from "lucide-react";
 
-import { useProducts } from "@/context/products-context";
+import { toast } from "sonner";
+
+import { deleteProductAction, duplicateProductAction } from "@/app/admin/(protected)/produtos/actions";
 import { useCategories } from "@/context/categories-context";
 import type { Product } from "@/lib/types";
 import { formatPrice } from "@/lib/format";
@@ -49,7 +51,6 @@ import {
 import { SearchInput } from "@/components/admin/search-input";
 import { Pagination } from "@/components/admin/pagination";
 import { EmptyState } from "@/components/admin/empty-state";
-import { TableSkeleton } from "@/components/admin/loading-skeleton";
 import { DeleteDialog } from "@/components/admin/delete-dialog";
 
 type SortKey = "name" | "price" | "stock";
@@ -86,9 +87,8 @@ function SortHeader({
   );
 }
 
-export function ProductTable() {
+export function ProductTable({ products }: { products: Product[] }) {
   const router = useRouter();
-  const { products, duplicateProduct, deleteProduct, isReady } = useProducts();
   const { categories } = useCategories();
 
   const [query, setQuery] = React.useState("");
@@ -150,12 +150,25 @@ export function ProductTable() {
     setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
   }
 
-  if (!isReady) {
-    return (
-      <div className="rounded-2xl border border-border bg-white">
-        <TableSkeleton />
-      </div>
-    );
+  async function handleDuplicate(id: string) {
+    try {
+      await duplicateProductAction(id);
+      toast.success("Produto duplicado");
+      router.refresh();
+    } catch {
+      toast.error("Não foi possível duplicar o produto");
+    }
+  }
+
+  async function handleDelete(id: string) {
+    try {
+      await deleteProductAction(id);
+      toast.success("Produto excluído");
+      setDeleteTarget(null);
+      router.refresh();
+    } catch {
+      toast.error("Não foi possível excluir o produto");
+    }
   }
 
   return (
@@ -284,7 +297,7 @@ export function ProductTable() {
                     <DropdownMenuItem onSelect={() => router.push(`/admin/produtos/${product.id}`)}>
                       <Pencil /> Editar
                     </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => duplicateProduct(product.id)}>
+                    <DropdownMenuItem onSelect={() => handleDuplicate(product.id)}>
                       <Copy /> Duplicar
                     </DropdownMenuItem>
                     <DropdownMenuItem variant="destructive" onSelect={() => setDeleteTarget(product)}>
@@ -312,7 +325,7 @@ export function ProductTable() {
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         description={`Tem certeza que deseja excluir "${deleteTarget?.name}"? Essa ação não pode ser desfeita.`}
-        onConfirm={() => deleteTarget && deleteProduct(deleteTarget.id)}
+        onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
       />
     </div>
   );

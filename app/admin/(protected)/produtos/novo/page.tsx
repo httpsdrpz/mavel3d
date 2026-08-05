@@ -1,17 +1,23 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
-import { useProducts, type ProductInput } from "@/context/products-context";
+import { createProductAction } from "@/app/admin/(protected)/produtos/actions";
+import type { ProductInput } from "@/services/products-admin";
 import { ProductForm } from "@/components/admin/product-form";
 
 export default function NewProductPage() {
   const router = useRouter();
-  const { addProduct } = useProducts();
 
-  function handleSubmit(data: ProductInput) {
-    addProduct(data);
-    router.push("/admin/produtos");
+  async function handleSubmit(data: ProductInput) {
+    try {
+      await createProductAction(data);
+      toast.success("Produto adicionado com sucesso");
+      router.push("/admin/produtos");
+    } catch {
+      toast.error("Não foi possível criar o produto");
+    }
   }
 
   return (
