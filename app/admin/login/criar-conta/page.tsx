@@ -1,22 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { hasAnyAdmin } from "@/services/users";
-import { LoginForm } from "@/components/admin/login-form";
+import { SetupForm } from "@/components/admin/setup-form";
 
 export const metadata: Metadata = {
-  title: "Login administrativo | MAVEL",
+  title: "Criar conta de administrador | MAVEL",
 };
 
-// Per-request — the "Criar Conta de Administrador" affordance must reflect
-// whether an ADMIN already exists right now, never a cached/stale answer.
+// Bootstrap-only route: once an ADMIN exists, this page must not be reachable.
 export const dynamic = "force-dynamic";
 
-export default async function AdminLoginPage(props: PageProps<"/admin/login">) {
-  const searchParams = await props.searchParams;
-  const showSetup = !(await hasAnyAdmin());
-  const successMessage =
-    searchParams.created === "1" ? "Conta criada com sucesso. Faça login para continuar." : undefined;
+export default async function AdminSetupPage() {
+  if (await hasAnyAdmin()) {
+    redirect("/admin/login");
+  }
 
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-zinc-950 p-4">
@@ -30,7 +29,7 @@ export default async function AdminLoginPage(props: PageProps<"/admin/login">) {
           <span className="text-lg font-semibold tracking-tight text-white">MAVEL</span>
         </Link>
 
-        <LoginForm showSetup={showSetup} successMessage={successMessage} />
+        <SetupForm />
       </div>
     </div>
   );

@@ -1,9 +1,8 @@
 "use server";
 
-import { AuthError } from "next-auth";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 
-import { signIn } from "@/auth";
 import { createAdminUser, hasAnyAdmin } from "@/services/users";
 
 export interface SetupState {
@@ -48,17 +47,9 @@ export async function createFirstAdminAction(
     return { error: error instanceof Error ? error.message : "Não foi possível criar a conta." };
   }
 
-  try {
-    await signIn("credentials", {
-      email: parsed.data.email,
-      password: parsed.data.password,
-      redirectTo: "/admin?created=1",
-    });
-    return {};
-  } catch (error) {
-    if (error instanceof AuthError) {
-      return { error: "Conta criada, mas não foi possível entrar automaticamente. Faça login." };
-    }
-    throw error; // rethrow the redirect signal
-  }
+  // Redirect (not auto sign-in) so the success confirmation survives even if
+  // a fresh Supabase Auth user can't sign in immediately after creation —
+  // previously an auto sign-in attempt here could fail silently and drop the
+  // admin back on a bare login screen with no trace the account existed.
+  redirect("/admin/login?created=1");
 }
