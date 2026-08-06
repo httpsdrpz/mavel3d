@@ -33,7 +33,7 @@ export function createAdminClient() {
  */
 export async function requireAdminSession() {
   const session = await auth();
-  if (!session?.user) {
+  if (!session?.user || session.user.role !== "ADMIN") {
     throw new Error("UNAUTHENTICATED");
   }
   return session.user;

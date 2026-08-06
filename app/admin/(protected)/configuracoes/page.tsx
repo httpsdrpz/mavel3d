@@ -23,13 +23,16 @@ import { Controller } from "react-hook-form";
 const settingsSchema = z.object({
   storeName: z.string().min(2, "Informe o nome da loja"),
   logoUrl: z.string().optional(),
+  faviconUrl: z.string().optional(),
   primaryColor: z.string().min(1, "Selecione uma cor"),
+  secondaryColor: z.string().min(1, "Selecione uma cor"),
   email: z.string().email("Email inválido"),
   phone: z.string().min(8, "Telefone inválido"),
   instagram: z.string().optional(),
   facebook: z.string().optional(),
   whatsapp: z.string().optional(),
   address: z.string().min(3, "Informe o endereço"),
+  copyrightText: z.string().min(1, "Informe o texto de copyright"),
   currency: z.string().min(1),
   defaultShippingRate: z.number().min(0, "A taxa não pode ser negativa"),
 });
@@ -56,45 +59,58 @@ export default function SettingsPage() {
     defaultValues: {
       storeName: DEFAULT_SETTINGS.storeName,
       logoUrl: DEFAULT_SETTINGS.logoUrl ?? "",
+      faviconUrl: DEFAULT_SETTINGS.faviconUrl ?? "",
       primaryColor: DEFAULT_SETTINGS.primaryColor,
+      secondaryColor: DEFAULT_SETTINGS.secondaryColor,
       email: DEFAULT_SETTINGS.email,
       phone: DEFAULT_SETTINGS.phone,
       instagram: DEFAULT_SETTINGS.instagram ?? "",
       facebook: DEFAULT_SETTINGS.facebook ?? "",
       whatsapp: DEFAULT_SETTINGS.whatsapp ?? "",
       address: DEFAULT_SETTINGS.address,
+      copyrightText: DEFAULT_SETTINGS.copyrightText,
       currency: DEFAULT_SETTINGS.currency,
       defaultShippingRate: DEFAULT_SETTINGS.defaultShippingRate,
     },
     values: {
       storeName: settings.storeName,
       logoUrl: settings.logoUrl ?? "",
+      faviconUrl: settings.faviconUrl ?? "",
       primaryColor: settings.primaryColor,
+      secondaryColor: settings.secondaryColor,
       email: settings.email,
       phone: settings.phone,
       instagram: settings.instagram ?? "",
       facebook: settings.facebook ?? "",
       whatsapp: settings.whatsapp ?? "",
       address: settings.address,
+      copyrightText: settings.copyrightText,
       currency: settings.currency,
       defaultShippingRate: settings.defaultShippingRate,
     },
   });
 
-  function handleFormSubmit(values: SettingsFormValues) {
-    updateSettings({
-      storeName: values.storeName,
-      logoUrl: values.logoUrl || undefined,
-      primaryColor: values.primaryColor,
-      email: values.email,
-      phone: values.phone,
-      instagram: values.instagram || undefined,
-      facebook: values.facebook || undefined,
-      whatsapp: values.whatsapp || undefined,
-      address: values.address,
-      currency: values.currency,
-      defaultShippingRate: values.defaultShippingRate,
-    });
+  async function handleFormSubmit(values: SettingsFormValues) {
+    try {
+      await updateSettings({
+        storeName: values.storeName,
+        logoUrl: values.logoUrl || undefined,
+        faviconUrl: values.faviconUrl || undefined,
+        primaryColor: values.primaryColor,
+        secondaryColor: values.secondaryColor,
+        email: values.email,
+        phone: values.phone,
+        instagram: values.instagram || undefined,
+        facebook: values.facebook || undefined,
+        whatsapp: values.whatsapp || undefined,
+        address: values.address,
+        copyrightText: values.copyrightText,
+        currency: values.currency,
+        defaultShippingRate: values.defaultShippingRate,
+      });
+    } catch {
+      // error toast already shown by the settings context
+    }
   }
 
   useSaveShortcut(() => handleSubmit(handleFormSubmit)(), isReady);
@@ -124,6 +140,10 @@ export default function SettingsPage() {
               <Input id="logoUrl" placeholder="https://..." {...register("logoUrl")} />
             </div>
             <div className="flex flex-col gap-2">
+              <Label htmlFor="faviconUrl">Favicon (URL)</Label>
+              <Input id="faviconUrl" placeholder="https://..." {...register("faviconUrl")} />
+            </div>
+            <div className="flex flex-col gap-2">
               <Label htmlFor="primaryColor">Cor primária</Label>
               <div className="flex items-center gap-2">
                 <input
@@ -132,6 +152,17 @@ export default function SettingsPage() {
                   {...register("primaryColor")}
                 />
                 <Input {...register("primaryColor")} className="flex-1" />
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="secondaryColor">Cor secundária</Label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  className="size-11 cursor-pointer rounded-xl border border-input bg-white p-1"
+                  {...register("secondaryColor")}
+                />
+                <Input {...register("secondaryColor")} className="flex-1" />
               </div>
             </div>
             <div className="flex flex-col gap-2">
@@ -187,6 +218,13 @@ export default function SettingsPage() {
               <Label htmlFor="address">Endereço</Label>
               <Input id="address" {...register("address")} />
               {errors.address && <p className="text-xs text-destructive">{errors.address.message}</p>}
+            </div>
+            <div className="flex flex-col gap-2 sm:col-span-2">
+              <Label htmlFor="copyrightText">Texto de copyright</Label>
+              <Input id="copyrightText" {...register("copyrightText")} />
+              {errors.copyrightText && (
+                <p className="text-xs text-destructive">{errors.copyrightText.message}</p>
+              )}
             </div>
           </div>
         </section>

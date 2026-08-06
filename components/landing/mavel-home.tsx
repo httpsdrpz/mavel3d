@@ -1,6 +1,6 @@
 "use client";
 
-import type { Product } from "@/lib/types";
+import type { Differentiator, LandingContent, Product, Testimonial } from "@/lib/types";
 import { MavelNavbar } from "@/components/landing/mavel-navbar";
 import { MavelHero } from "@/components/landing/mavel-hero";
 import { MavelDifferentiators } from "@/components/landing/mavel-differentiators";
@@ -11,18 +11,25 @@ import { MavelTestimonials } from "@/components/landing/mavel-testimonials";
 import { MavelCta } from "@/components/landing/mavel-cta";
 import { MavelFooter } from "@/components/landing/mavel-footer";
 
-export function MavelHome({ featuredProducts }: { featuredProducts: Product[] }) {
+interface MavelHomeProps {
+  featuredProducts: Product[];
+  content: LandingContent;
+  differentiators: Differentiator[];
+  testimonials: Testimonial[];
+}
+
+export function MavelHome({ featuredProducts, content, differentiators, testimonials }: MavelHomeProps) {
   return (
     <div className="flex min-h-screen flex-col bg-zinc-950">
       <MavelNavbar />
       <main className="flex flex-1 flex-col">
-        <MavelHero />
-        <MavelDifferentiators />
+        <MavelHero hero={content.hero} />
+        <MavelDifferentiators differentiators={differentiators} />
         <MavelFeaturedProducts products={featuredProducts} />
         <MavelHowItWorks />
-        <MavelAbout />
-        <MavelTestimonials />
-        <MavelCta />
+        <MavelAbout about={content.about} />
+        <MavelTestimonials testimonials={testimonials} />
+        <MavelCta cta={content.cta} />
       </main>
       <MavelFooter />
     </div>

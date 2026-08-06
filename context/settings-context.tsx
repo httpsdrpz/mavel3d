@@ -3,13 +3,14 @@
 import * as React from "react";
 import { toast } from "sonner";
 
+import { updateSettingsAction } from "@/app/admin/(protected)/configuracoes/actions";
+import { getSettings } from "@/services/settings";
 import { DEFAULT_SETTINGS } from "@/lib/settings";
-import { getSettings, saveSettings } from "@/services/settings.service";
 import type { StoreSettings } from "@/lib/types";
 
 interface SettingsContextValue {
   settings: StoreSettings;
-  updateSettings: (input: StoreSettings) => void;
+  updateSettings: (input: StoreSettings) => Promise<void>;
   isReady: boolean;
 }
 
@@ -20,20 +21,38 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [isReady, setIsReady] = React.useState(false);
 
   React.useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration from a browser-only store; must run after mount to avoid an SSR mismatch
-    setSettings(getSettings());
-    setIsReady(true);
+    let cancelled = false;
+    getSettings()
+      .then((data) => {
+        if (!cancelled) setSettings(data);
+      })
+      .catch(() => {
+        // falls back to DEFAULT_SETTINGS if Supabase isn't reachable
+      })
+      .finally(() => {
+        if (!cancelled) setIsReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   React.useEffect(() => {
     if (!isReady) return;
-    saveSettings(settings);
     document.documentElement.style.setProperty("--primary", settings.primaryColor);
-  }, [settings, isReady]);
+  }, [settings.primaryColor, isReady]);
 
-  const updateSettings = React.useCallback((input: StoreSettings) => {
-    setSettings(input);
-    toast.success("Configurações salvas com sucesso");
+  const updateSettings = React.useCallback(async (input: StoreSettings) => {
+    try {
+      const saved = await updateSettingsAction(input);
+      setSettings(saved);
+      toast.success("Configurações salvas com sucesso");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Não foi possível salvar as configurações"
+      );
+      throw error;
+    }
   }, []);
 
   return (

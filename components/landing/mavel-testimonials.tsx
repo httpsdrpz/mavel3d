@@ -3,22 +3,11 @@
 import { motion } from "framer-motion";
 import { Star } from "lucide-react";
 
-const TESTIMONIALS = [
-  {
-    quote: "Qualidade surpreendente. O acabamento ficou perfeito.",
-    name: "Camila R.",
-  },
-  {
-    quote: "Meu produto personalizado ficou exatamente como imaginei.",
-    name: "Rafael T.",
-  },
-  {
-    quote: "Entrega rápida, ótimo atendimento e excelente qualidade.",
-    name: "Beatriz S.",
-  },
-];
+import type { Testimonial } from "@/lib/types";
 
-export function MavelTestimonials() {
+export function MavelTestimonials({ testimonials }: { testimonials: Testimonial[] }) {
+  if (testimonials.length === 0) return null;
+
   return (
     <section className="bg-zinc-950 py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -29,9 +18,9 @@ export function MavelTestimonials() {
         </div>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-          {TESTIMONIALS.map((t, i) => (
+          {testimonials.map((t, i) => (
             <motion.div
-              key={t.name}
+              key={t.id}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
@@ -40,11 +29,21 @@ export function MavelTestimonials() {
             >
               <div className="flex gap-0.5">
                 {Array.from({ length: 5 }).map((_, idx) => (
-                  <Star key={idx} className="size-4 fill-amber-400 text-amber-400" />
+                  <Star
+                    key={idx}
+                    className={
+                      idx < t.rating
+                        ? "size-4 fill-amber-400 text-amber-400"
+                        : "size-4 text-zinc-700"
+                    }
+                  />
                 ))}
               </div>
-              <p className="mt-4 leading-relaxed text-zinc-300">&ldquo;{t.quote}&rdquo;</p>
-              <p className="mt-5 text-sm font-medium text-zinc-500">{t.name}</p>
+              <p className="mt-4 leading-relaxed text-zinc-300">&ldquo;{t.text}&rdquo;</p>
+              <p className="mt-5 text-sm font-medium text-zinc-500">
+                {t.name}
+                {t.role && <span className="text-zinc-600"> · {t.role}</span>}
+              </p>
             </motion.div>
           ))}
         </div>

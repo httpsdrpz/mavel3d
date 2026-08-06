@@ -136,6 +136,27 @@ export async function duplicateProduct(id: string): Promise<Product> {
   return mapRowToProduct(data as ProductRow);
 }
 
+/** Powers the Landing "Produtos em destaque" picker: turns `featured` on for
+ * exactly the given ids (max 3, enforced by the caller) and off for every
+ * other product, so the Home's `getFeaturedProducts(3)` stays in sync. */
+export async function setFeaturedProducts(ids: string[]): Promise<void> {
+  const supabase = createAdminClient();
+
+  const { error: clearError } = await supabase
+    .from("products")
+    .update({ featured: false })
+    .eq("featured", true);
+  if (clearError) throw new Error(clearError.message);
+
+  if (ids.length === 0) return;
+
+  const { error: setError } = await supabase
+    .from("products")
+    .update({ featured: true })
+    .in("id", ids);
+  if (setError) throw new Error(setError.message);
+}
+
 export async function uploadProductImage(file: File): Promise<string> {
   const supabase = createAdminClient();
   const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";

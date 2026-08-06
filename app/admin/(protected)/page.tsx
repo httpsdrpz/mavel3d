@@ -1,23 +1,46 @@
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { AlertTriangle, Boxes, ClipboardList, Package, Star, Wallet } from "lucide-react";
+import {
+  AlertTriangle,
+  Boxes,
+  History,
+  Image as ImageIcon,
+  LayoutTemplate,
+  Package,
+  Settings,
+  Star,
+  Tags,
+  UserCog,
+} from "lucide-react";
 
 import { getAllProductsAdmin } from "@/services/products-admin";
-import { getOrders } from "@/services/orders.service";
+import { getCategories } from "@/services/categories";
 import { activity } from "@/lib/activity";
 import { formatPrice } from "@/lib/format";
 
 import { Badge } from "@/components/ui/badge";
 import { StatsGrid, type StatCardData } from "@/components/admin/stats-grid";
+import { QuickShortcuts, type QuickShortcut } from "@/components/admin/quick-shortcuts";
+import { WelcomeToast } from "@/components/admin/welcome-toast";
+
+// Per-session admin data — never prerender/cache at build time.
+export const dynamic = "force-dynamic";
+
+const SHORTCUTS: QuickShortcut[] = [
+  { href: "/admin/produtos", label: "Produtos", description: "Gerenciar catálogo", icon: Package },
+  { href: "/admin/landing", label: "Landing Page", description: "Personalizar a Home", icon: LayoutTemplate },
+  { href: "/admin/midia", label: "Biblioteca de Mídia", description: "Imagens e uploads", icon: ImageIcon },
+  { href: "/admin/configuracoes", label: "Configurações", description: "Dados da loja", icon: Settings },
+  { href: "/admin/usuarios", label: "Usuários", description: "Administradores", icon: UserCog },
+];
 
 export default async function AdminDashboardPage() {
-  const products = await getAllProductsAdmin();
-  const orders = getOrders();
+  const [products, categories] = await Promise.all([getAllProductsAdmin(), getCategories()]);
 
   const totalProducts = products.length;
-  const totalStock = products.reduce((sum, p) => sum + p.stock, 0);
+  const activeCount = products.filter((p) => p.active).length;
   const featuredCount = products.filter((p) => p.featured).length;
-  const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
 
   const recentProducts = [...products]
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
@@ -29,20 +52,26 @@ export default async function AdminDashboardPage() {
 
   const stats: StatCardData[] = [
     { label: "Total de produtos", value: totalProducts, icon: Package },
-    { label: "Produtos em estoque", value: totalStock, icon: Boxes },
+    { label: "Produtos ativos", value: activeCount, icon: Boxes },
     { label: "Produtos em destaque", value: featuredCount, icon: Star },
-    { label: "Total de pedidos", value: orders.length, icon: ClipboardList },
-    { label: "Receita total", value: formatPrice(totalRevenue), icon: Wallet },
+    { label: "Categorias", value: categories.length, icon: Tags },
+    { label: "Últimas alterações", value: activity.length, icon: History },
   ];
 
   return (
     <div className="flex flex-col gap-8">
+      <Suspense fallback={null}>
+        <WelcomeToast />
+      </Suspense>
+
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Dashboard</h1>
         <p className="mt-1 text-muted-foreground">Visão geral da sua loja Marvel.</p>
       </div>
 
       <StatsGrid stats={stats} />
+
+      <QuickShortcuts shortcuts={SHORTCUTS} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="rounded-2xl border border-border bg-white p-6 lg:col-span-1">

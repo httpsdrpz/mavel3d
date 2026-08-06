@@ -9,10 +9,10 @@ interface ProductsContextValue {
   products: Product[];
   getProduct: (id: string) => Product | undefined;
   /**
-   * Renames a category in the in-memory product list only (used by the
-   * legacy categorias admin page for its product-count display). It does
-   * not persist to Supabase — categories aren't part of this migration, so
-   * a rename here doesn't update the `category` column on real products.
+   * Renames a category in the in-memory product list only, so the products
+   * admin table reflects a rename immediately. The actual `products.category`
+   * column is updated server-side by services/categories-admin.ts — this is
+   * just optimistic local sync, since ProductsContext doesn't refetch.
    */
   renameCategoryInProducts: (oldName: string, newName: string) => void;
   isReady: boolean;

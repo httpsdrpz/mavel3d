@@ -84,13 +84,16 @@ export interface Customer {
 export interface StoreSettings {
   storeName: string;
   logoUrl?: string;
+  faviconUrl?: string;
   primaryColor: string;
+  secondaryColor: string;
   email: string;
   phone: string;
   instagram?: string;
   facebook?: string;
   whatsapp?: string;
   address: string;
+  copyrightText: string;
   currency: string;
   defaultShippingRate: number;
 }
@@ -100,3 +103,83 @@ export interface ActivityItem {
   message: string;
   date: string;
 }
+
+export type AdminRole = "ADMIN";
+
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: AdminRole;
+  active: boolean;
+  createdAt: string;
+  lastSignInAt: string | null;
+}
+
+export interface HeroContent {
+  badge: string;
+  headline: string;
+  headlineHighlight: string;
+  subheadline: string;
+  primaryButtonText: string;
+  primaryButtonLink: string;
+  secondaryButtonText: string;
+  secondaryButtonLink: string;
+  imageUrl: string;
+  backgroundImageUrl: string;
+}
+
+export interface AboutContent {
+  eyebrow: string;
+  title: string;
+  text: string;
+  imageUrl: string;
+}
+
+export interface CtaContent {
+  title: string;
+  text: string;
+  primaryButtonText: string;
+  primaryButtonLink: string;
+  secondaryButtonText: string;
+  secondaryButtonLink: string;
+  imageUrl: string;
+}
+
+export interface LandingContent {
+  hero: HeroContent;
+  about: AboutContent;
+  cta: CtaContent;
+}
+
+export interface Differentiator {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  sortOrder: number;
+}
+
+export interface Testimonial {
+  id: string;
+  name: string;
+  role: string;
+  photoUrl: string;
+  text: string;
+  rating: number;
+  sortOrder: number;
+}
+
+export interface MediaItem {
+  id: string;
+  path: string;
+  url: string;
+  folder: string;
+  filename: string;
+  size: number;
+  mimeType: string;
+  createdAt: string;
+}
+
+export const MEDIA_FOLDERS = ["products", "landing", "logos", "banners"] as const;
+export type MediaFolder = (typeof MEDIA_FOLDERS)[number];

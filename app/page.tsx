@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
 import { getFeaturedProducts } from "@/services/products";
+import { getDifferentiators, getLandingContent } from "@/services/landing";
+import { getTestimonials } from "@/services/testimonials";
 import { MavelHome } from "@/components/landing/mavel-home";
 
 // Always reflects live `featured`/`active` state from Supabase — don't bake
@@ -15,6 +17,19 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const featuredProducts = await getFeaturedProducts(3);
-  return <MavelHome featuredProducts={featuredProducts} />;
+  const [featuredProducts, content, differentiators, testimonials] = await Promise.all([
+    getFeaturedProducts(3),
+    getLandingContent(),
+    getDifferentiators(),
+    getTestimonials(),
+  ]);
+
+  return (
+    <MavelHome
+      featuredProducts={featuredProducts}
+      content={content}
+      differentiators={differentiators}
+      testimonials={testimonials}
+    />
+  );
 }

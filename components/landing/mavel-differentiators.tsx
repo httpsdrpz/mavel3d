@@ -1,32 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Factory, ShieldCheck, Target, Wand2 } from "lucide-react";
 
-const DIFFERENTIATORS = [
-  {
-    icon: Target,
-    title: "Precisão Profissional",
-    description: "Produção em alta definição para um acabamento impecável.",
-  },
-  {
-    icon: Wand2,
-    title: "Personalização Total",
-    description: "Transforme sua ideia em uma peça única.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Materiais de Alta Qualidade",
-    description: "Resistência, durabilidade e excelente acabamento.",
-  },
-  {
-    icon: Factory,
-    title: "Produção Sob Demanda",
-    description: "Cada peça é produzida especialmente para você.",
-  },
-];
+import type { Differentiator } from "@/lib/types";
+import { DynamicIcon } from "@/components/dynamic-icon";
 
-export function MavelDifferentiators() {
+export function MavelDifferentiators({ differentiators }: { differentiators: Differentiator[] }) {
+  if (differentiators.length === 0) return null;
+
   return (
     <section className="bg-zinc-950 py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -40,9 +21,9 @@ export function MavelDifferentiators() {
         </div>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {DIFFERENTIATORS.map((item, i) => (
+          {differentiators.map((item, i) => (
             <motion.div
-              key={item.title}
+              key={item.id}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
@@ -50,7 +31,7 @@ export function MavelDifferentiators() {
               className="group rounded-2xl border border-white/10 bg-zinc-900/60 p-6 backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-violet-500/30 hover:bg-zinc-900"
             >
               <div className="flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-purple-500 text-white shadow-md shadow-violet-600/20">
-                <item.icon className="size-5" />
+                <DynamicIcon name={item.icon} className="size-5" />
               </div>
               <h3 className="mt-5 font-semibold text-white">{item.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-zinc-400">{item.description}</p>

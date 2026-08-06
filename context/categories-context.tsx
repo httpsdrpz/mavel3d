@@ -3,8 +3,12 @@
 import * as React from "react";
 import { toast } from "sonner";
 
-import { categories as seedCategories } from "@/lib/categories";
-import { getCategories, saveCategories } from "@/services/categories.service";
+import {
+  createCategoryAction,
+  deleteCategoryAction,
+  updateCategoryAction,
+} from "@/app/admin/(protected)/categorias/actions";
+import { getCategories } from "@/services/categories";
 import type { ProductCategory } from "@/lib/types";
 import { useProducts } from "./products-context";
 
@@ -12,52 +16,80 @@ export type CategoryInput = Omit<ProductCategory, "id">;
 
 interface CategoriesContextValue {
   categories: ProductCategory[];
-  addCategory: (input: CategoryInput) => void;
-  updateCategory: (id: string, input: CategoryInput) => void;
-  deleteCategory: (id: string) => void;
+  addCategory: (input: CategoryInput) => Promise<void>;
+  updateCategory: (id: string, input: CategoryInput) => Promise<void>;
+  deleteCategory: (id: string) => Promise<void>;
   isReady: boolean;
 }
 
 const CategoriesContext = React.createContext<CategoriesContextValue | null>(null);
 
+function byName(a: ProductCategory, b: ProductCategory) {
+  return a.name.localeCompare(b.name);
+}
+
 export function CategoriesProvider({ children }: { children: React.ReactNode }) {
   const { renameCategoryInProducts } = useProducts();
-  const [categories, setCategories] = React.useState<ProductCategory[]>(seedCategories);
+  const [categories, setCategories] = React.useState<ProductCategory[]>([]);
   const [isReady, setIsReady] = React.useState(false);
 
   React.useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration from a browser-only store; must run after mount to avoid an SSR mismatch
-    setCategories(getCategories());
-    setIsReady(true);
+    let cancelled = false;
+    getCategories()
+      .then((data) => {
+        if (!cancelled) setCategories(data);
+      })
+      .catch(() => {
+        // storefront/admin fall back to an empty list if Supabase isn't reachable
+      })
+      .finally(() => {
+        if (!cancelled) setIsReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  React.useEffect(() => {
-    if (!isReady) return;
-    saveCategories(categories);
-  }, [categories, isReady]);
-
-  const addCategory = React.useCallback((input: CategoryInput) => {
-    setCategories((prev) => [...prev, { ...input, id: `cat-${Date.now()}` }]);
-    toast.success("Categoria criada com sucesso");
+  const addCategory = React.useCallback(async (input: CategoryInput) => {
+    try {
+      const created = await createCategoryAction(input);
+      setCategories((prev) => [...prev, created].sort(byName));
+      toast.success("Categoria criada com sucesso");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível criar a categoria");
+      throw error;
+    }
   }, []);
 
   const updateCategory = React.useCallback(
-    (id: string, input: CategoryInput) => {
-      setCategories((prev) => {
-        const existing = prev.find((c) => c.id === id);
+    async (id: string, input: CategoryInput) => {
+      const existing = categories.find((c) => c.id === id);
+      try {
+        const updated = await updateCategoryAction(id, input);
+        setCategories((prev) => prev.map((c) => (c.id === id ? updated : c)).sort(byName));
         if (existing && existing.name !== input.name) {
           renameCategoryInProducts(existing.name, input.name);
         }
-        return prev.map((c) => (c.id === id ? { ...c, ...input } : c));
-      });
-      toast.success("Categoria atualizada com sucesso");
+        toast.success("Categoria atualizada com sucesso");
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Não foi possível atualizar a categoria"
+        );
+        throw error;
+      }
     },
-    [renameCategoryInProducts]
+    [categories, renameCategoryInProducts]
   );
 
-  const deleteCategory = React.useCallback((id: string) => {
-    setCategories((prev) => prev.filter((c) => c.id !== id));
-    toast.success("Categoria excluída");
+  const deleteCategory = React.useCallback(async (id: string) => {
+    try {
+      await deleteCategoryAction(id);
+      setCategories((prev) => prev.filter((c) => c.id !== id));
+      toast.success("Categoria excluída");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível excluir a categoria");
+      throw error;
+    }
   }, []);
 
   return (
